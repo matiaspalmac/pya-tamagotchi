@@ -1,0 +1,28 @@
+app = "tama-auth"
+primary_region = "scl"
+
+[build]
+  dockerfile = "../../services/auth/Dockerfile"
+
+[env]
+  SERVICE_PORT     = "8081"
+  POSTGRES_PORT    = "5432"
+  JWT_EXPIRE_MIN   = "60"
+  JWT_REFRESH_DAYS = "30"
+  LOG_LEVEL        = "info"
+
+# Solo expuesto en red privada Fly (no público)
+[[services]]
+  internal_port = 8081
+  protocol = "tcp"
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[services.ports]]
+    port = 8081
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 256

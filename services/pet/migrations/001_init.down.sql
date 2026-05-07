@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS pet_events;
+DROP TABLE IF EXISTS pets;

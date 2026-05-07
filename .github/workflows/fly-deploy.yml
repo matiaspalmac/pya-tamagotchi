@@ -1,0 +1,53 @@
+name: Fly Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "services/**"
+      - "web/**"
+      - "deploy/fly/**"
+      - ".github/workflows/fly-deploy.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    concurrency: deploy-${{ github.ref }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: tama-auth
+            cfg: deploy/fly/fly.auth.toml
+            paths: services/auth
+          - app: tama-pet
+            cfg: deploy/fly/fly.pet.toml
+            paths: services/pet
+          - app: tama-social
+            cfg: deploy/fly/fly.social.toml
+            paths: services/social
+          - app: tama-notif
+            cfg: deploy/fly/fly.notif.toml
+            paths: services/notif
+          - app: tama-gateway
+            cfg: deploy/fly/fly.gateway.toml
+            paths: services/gateway
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - run: flyctl deploy -c ${{ matrix.cfg }} -a ${{ matrix.app }} --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  web:
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - run: |
+          flyctl deploy -c deploy/fly/fly.web.toml -a tama-web --remote-only \
+            --build-arg VITE_API_URL=https://tama-gateway.fly.dev
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

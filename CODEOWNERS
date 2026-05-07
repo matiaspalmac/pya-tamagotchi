@@ -1,0 +1,11 @@
+# Ownership por área. Sustituir handles cuando se asignen.
+*                       @org/leads
+/services/auth/         @dei
+/services/gateway/      @dei
+/services/pet/          @safe
+/services/notif/        @safe
+/services/social/       @p4
+/web/                   @p3
+/deploy/                @p5
+/.github/               @dei
+/docs/                  @dei @safe

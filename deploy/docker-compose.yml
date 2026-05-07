@@ -1,0 +1,86 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-tama}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tama}
+      POSTGRES_DB: ${POSTGRES_DB:-tama}
+    ports: ["5432:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  auth:
+    build:
+      context: ..
+      dockerfile: services/auth/Dockerfile
+    env_file: ../.env
+    environment:
+      SERVICE_PORT: 8081
+    ports: ["8081:8081"]
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  pet:
+    build:
+      context: ..
+      dockerfile: services/pet/Dockerfile
+    env_file: ../.env
+    environment:
+      SERVICE_PORT: 8082
+    ports: ["8082:8082"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis:    { condition: service_healthy }
+
+  social:
+    build:
+      context: ..
+      dockerfile: services/social/Dockerfile
+    env_file: ../.env
+    environment:
+      SERVICE_PORT: 8083
+    ports: ["8083:8083"]
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  notif:
+    build:
+      context: ..
+      dockerfile: services/notif/Dockerfile
+    env_file: ../.env
+    environment:
+      SERVICE_PORT: 8084
+    ports: ["8084:8084"]
+    depends_on:
+      redis: { condition: service_healthy }
+
+  gateway:
+    build:
+      context: ..
+      dockerfile: services/gateway/Dockerfile
+    env_file: ../.env
+    environment:
+      SERVICE_PORT: 8080
+      AUTH_URL:   http://auth:8081
+      PET_URL:    http://pet:8082
+      SOCIAL_URL: http://social:8083
+      NOTIF_URL:  http://notif:8084
+    ports: ["8080:8080"]
+    depends_on: [auth, pet, social, notif]
+
+volumes:
+  pgdata:
