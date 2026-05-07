@@ -81,17 +81,18 @@ Ver `docs/SPEC.md` para detalle.
 
 ## Deploy
 
-Plataforma: **Railway** (backend + frontend + Postgres + Redis plugins, todo en 1 proyecto).
+Plataforma: **DigitalOcean Droplet** (vía GitHub Student Pack $200 crédito).
 
-Ver `docs/DEPLOY-RAILWAY.md` paso a paso.
+Stack: VPS Ubuntu + Docker Compose + Caddy (HTTPS auto) + dominio Namecheap .me free.
 
-Quick:
 ```bash
-railway login
-railway init pya-tamagotchi
-railway add --plugin postgresql --plugin redis
-# Crea servicios desde dashboard apuntando a /services/*/Dockerfile
+# En VPS Ubuntu 24.04 fresco:
+curl -fsSL https://raw.githubusercontent.com/matiaspalmac/pya-tamagotchi/main/scripts/vps-bootstrap.sh | bash
+nano /opt/tamagotchi/.env   # secrets + dominios
+bash /opt/tamagotchi/scripts/vps-deploy.sh
 ```
+
+Detalles paso a paso: `docs/DEPLOY-VPS.md`.
 
 ## Licencia
 
