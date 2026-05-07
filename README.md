@@ -81,13 +81,17 @@ Ver `docs/SPEC.md` para detalle.
 
 ## Deploy
 
-Plataforma: **Fly.io** (todo: backend + frontend + Postgres + Redis Upstash).
+Plataforma: **Railway** (backend + frontend + Postgres + Redis plugins, todo en 1 proyecto).
 
+Ver `docs/DEPLOY-RAILWAY.md` paso a paso.
+
+Quick:
 ```bash
-bash scripts/fly-deploy.sh
+railway login
+railway init pya-tamagotchi
+railway add --plugin postgresql --plugin redis
+# Crea servicios desde dashboard apuntando a /services/*/Dockerfile
 ```
-
-Detalles: `docs/DEPLOY-FLY.md`.
 
 ## Licencia
 

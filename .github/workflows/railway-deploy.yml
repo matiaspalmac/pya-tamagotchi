@@ -1,0 +1,43 @@
+name: Railway Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "services/**"
+      - "web/**"
+      - ".github/workflows/railway-deploy.yml"
+  workflow_dispatch:
+
+jobs:
+  check-token:
+    runs-on: ubuntu-latest
+    outputs:
+      has_token: ${{ steps.t.outputs.has_token }}
+    steps:
+      - id: t
+        run: |
+          if [ -n "${{ secrets.RAILWAY_TOKEN }}" ]; then
+            echo "has_token=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_token=false" >> $GITHUB_OUTPUT
+          fi
+
+  deploy:
+    needs: check-token
+    if: needs.check-token.outputs.has_token == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [auth, pet, social, notif, gateway, web]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - run: npm install -g @railway/cli
+      - name: Deploy ${{ matrix.service }}
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          railway up --service ${{ matrix.service }} --detach
