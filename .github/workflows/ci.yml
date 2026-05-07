@@ -20,9 +20,12 @@ jobs:
       - name: Tidy
         working-directory: services/${{ matrix.svc }}
         run: go mod tidy
+      - name: Vet
+        working-directory: services/${{ matrix.svc }}
+        run: go vet ./...
       - name: Build
         working-directory: services/${{ matrix.svc }}
-        run: go build ./...
+        run: go build -o /tmp/${{ matrix.svc }}-bin ./cmd
       - name: Test
         working-directory: services/${{ matrix.svc }}
         run: go test ./... -count=1
